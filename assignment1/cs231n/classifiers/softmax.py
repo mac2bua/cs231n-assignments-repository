@@ -86,15 +86,7 @@ def softmax_loss_vectorized(W, X, y, reg):
   # d/dW loss
   P = np.exp(scores)/exp_sum.reshape(-1, 1) # N x C
   P[np.arange(num_train), y] -= 1 # P[i, y[i]] = prob(y[i] == y[i]|x[i];W) - 1
-  # X is N x D
-  # P is N x C
-  # W is D x C
-  print 'shape(W):', W.shape
-  print 'shape(X):', X.shape
-  print 'shape(P):', P.shape
-  print 'shape(dW):', dW.shape
-
-  dW = W * P.T
+  dW = np.dot(X.T, P)
 
   loss /= num_train
   dW /= num_train

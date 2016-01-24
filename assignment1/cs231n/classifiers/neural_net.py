@@ -74,11 +74,13 @@ class TwoLayerNet(object):
     # Store the result in the scores variable, which should be an array of      #
     # shape (N, C).                                                             #
     #############################################################################
-    pass
+    ReLU = lambda X : np.maximum(0.0, X)
+    ReLU_out = ReLU(np.dot(X, W1) + b1)
+    scores = np.dot(ReLU_out, W2) + b2
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
-    
+
     # If the targets are not given then jump out, we're done
     if y is None:
       return scores
@@ -92,7 +94,16 @@ class TwoLayerNet(object):
     # classifier loss. So that your results match ours, multiply the            #
     # regularization loss by 0.5                                                #
     #############################################################################
-    pass
+
+    # softmax loss
+    #TODO TODO TODO TODO creo que deberia calcular el loss de los bias
+    num_train = X.shape[0]
+    scores -= np.max(scores, axis=1).reshape(-1, 1) # for numerical stability
+    exp_sum = np.sum(np.exp(scores), axis=1)
+    loss = np.sum(-1 * np.log(np.exp(scores[np.arange(num_train), y]) / exp_sum))
+    loss /= num_train
+    loss += 0.5 * reg * np.sum(W1 * W1) + 0.5 * reg * np.sum(W2 * W2)
+
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -104,7 +115,20 @@ class TwoLayerNet(object):
     # and biases. Store the results in the grads dictionary. For example,       #
     # grads['W1'] should store the gradient on W1, and be a matrix of same size #
     #############################################################################
-    pass
+
+    # TODO TODO TODO TODO aparentemente el gradiente de W2 esta bien pero faltaria
+    # calcular el gradiente de W1 que implica derivar max(0, X). Supongo que es
+    # como en el caso de SVM loss. Tambien tendria que ver que onda con el bias.
+    dW1 = np.zeros(W1.shape)
+    grads['W1'] = dW1
+
+    P = np.exp(scores)/exp_sum.reshape(-1, 1) # N x C
+    P[np.arange(num_train), y] -= 1 # P[i, y[i]] = prob(y[i] == y[i]|x[i];W) - 1
+    dW2 = np.dot(ReLU_out.T, P)
+
+    dW2 /= num_train
+    dW2 += reg * W2
+    grads['W2'] = dW2
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -214,5 +238,3 @@ class TwoLayerNet(object):
     ###########################################################################
 
     return y_pred
-
-
